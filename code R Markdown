@@ -22,12 +22,19 @@ library(rworldmap)
 
 #Downloading and Loading the Data
 
-You have to download the UNGD Corpus, which contains speeches from head of states and leading diplomats, held between 1970 and 2018 at the UN General Debate. 
-You can find further information on the dataset via the following link (https://github.com/sjankin/UnitedNations) and you can download the zip folder called 
-UNGDC 1970-2018.zip here: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/0TJX8Y
+You have to download the UNGD Corpus, which contains speeches from head of states and leading diplomats, 
+held between 1970 and 2018 at the UN General Debate. 
 
-After you have downloaded and unpacked the zip folder, you will receive a folder called "Converted sessions", containing all speeches ordered by year and country.  
-If you save this folder on your desktop, you only need to change the "UserName" within the first line of code below.  
+You can find further information on the dataset via the following link (https://github.com/sjankin/UnitedNations) 
+and you can download the zip folder called "UNGDC 1970-2018.zip" here: 
+https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/0TJX8Y
+
+After you have downloaded and unpacked the zip folder, you will end up with a folder called "Converted sessions", 
+containing all speeches of the UN General Debate ordered by year and country.  
+If you save this folder on your desktop, you only need to change the "UserName" within the first line of code below.
+You can then run the rest of the code automatically.
+
+If you have any questions, please contact me at: j.anderer@mia.hertie-school.org
 
 ```{r include=FALSE}
 #Loading data
@@ -45,7 +52,12 @@ ungd_files$doc_id <- str_replace(ungd_files$doc_id , ".txt", "") %>%
 
 #Research Question
 
-In the light of recent school demonstrations against climate change or in favor of climate action, I want to investigate the general environmental debate or discourse since 1970 and until today. For many researchers, the moon landing in 1969 was the starting point for the emergence of environmental consciousness. This is true due to the fact, that mankind obtained the first picture of the Earth from above, which was triggering our environmental understanding. In this sense, and from 1970 onwards, I expect to see a certain increasing trajectory where the environmental debate becomes more and more important with time. 
+In the light of recent school demonstrations against climate change or in favor of climate action, 
+I want to investigate the general environmental debate or discourse since 1970 and until today. 
+For many researchers, the moon landing in 1969 was the starting point for the emergence of environmental consciousness. 
+This is true due to the fact, that mankind obtained the first picture of the Earth from above, 
+which was triggering our environmental understanding. In this sense, and from 1970 onwards, 
+I expect to see an increasing trajectory where the environmental debate becomes more and more important with time, peaking nowadays. 
 
 ```{r include=FALSE}
 #creating corpus object of all years between 1970 and 2018
@@ -57,13 +69,13 @@ ungd_corpus1 <- as.character(ungd_corpus)
 class(ungd_corpus1)
 ```
 
-The term "environment" appears 20.152 times within the whole corpus. 
+The term "environment" appears 20.152 times within the whole corpus of text files. 
 
 ```{r echo=FALSE}
 length(unlist(strsplit(ungd_corpus1, "environment"))) 
 ```
 
-#Pre-processing
+#Pre-processing and Tokenizing 
 
 In the following, I pre-process and tokenize the data.
 
@@ -89,13 +101,14 @@ tok.n <- tokens(tok.s, ngrams = c(1:2), include_docvars = TRUE)
 # specification that we want unigrams and bigrams 
 ```
 
-I can also create a dfm, which takes all functions of tokenizing, normalizing, and stemming. Besides to stopwords, I removed numbers, punctuations, symbols and other unnecessary information. 
+I can also create a dfm, which takes all functions of tokenizing, normalizing, and stemming. 
+Besides to stopwords, I removed numbers, punctuations, symbols and other unnecessary information. 
 
 ```{r include=FALSE}
 dfm <- dfm(ungd_corpus, what = c("word"), remove = stopwords("english"), stem = TRUE, remove_numbers = TRUE, remove_punct = TRUE, remove_symbols = TRUE, remove_separators = TRUE, remove_twitter = TRUE, remove_hyphens = TRUE, remove_url = TRUE)
 ```
 
-The same - without stemming - can be done here with `tokens()`.
+The same - without stemming - can be done here with the `tokens()` function.
 
 ```{r include=FALSE}
 data_corpus_ungd_withoutstemming <- tokens(ungd_corpus, what = c("word"), remove = stopwords("english"), remove_numbers = TRUE, remove_punct = TRUE, remove_symbols = TRUE, remove_separators = TRUE, remove_twitter = TRUE, remove_hyphens = TRUE, remove_url = TRUE)
@@ -134,9 +147,13 @@ counts <- environment %>%
 counts$year <- as.numeric(counts$year)
 ```
 
-In the following, I perform a key-words-in-context search for environmental key terms. The window is set to 25 words before and after the term - reflecting approximately half a paragraph before and after the term (on average a paragraph in English is 50 words). 
+I perform a key-words-in-context search for environmental key terms. 
+The window is set to 25 words before and after the term - reflecting approximately half a paragraph before 
+and after the term (on average a paragraph in English is 50 words). 
 
-Below, I printed two summaries, the first with the valuetype `fixed`, the second with `regex`, which allows for more flexibility. Hence, the patterns appear more often when using `regex`. I continue the analysis with the `fixed` example (where more word cleaning is applied). 
+Below, I printed two summaries, the first with the valuetype `fixed`, the second with `regex`, which allows for more flexibility. 
+Hence, the patterns appear more often when using `regex`. 
+I continue the analysis with the `fixed` example (where more word cleaning is applied). 
 
 ```{r include=FALSE}
 tok.environment <- kwic(tok.compound, c("environment", "climate_change", "sustainability", "sustainable_development", "global_warming", "acid_rain", "green_house", "temperature", "extreme_weather", "global_environmental_change", "climate_variability", "greenhouse", "carbon", "renewable_energy", "carbon_emission", "co2_emission", "climate_pollutant", "climate_vulnerability", "natural_desaster", "degrowth", "green_growth", "Brundtland"), window = 25, valuetype = "fixed")
@@ -148,9 +165,11 @@ summary(tok.environment2)
 #readr::write_csv(tok.environment, "environment_kwic_25_fixed.csv")
 ```
 
-We can see that "environment" is the most common pattern within the dictionary. Two other important wordings are both "sustainable development" and "climate change". 
+We can see that "environment" is the most common pattern within the dictionary. 
+Two other important wordings are both "sustainable development" and "climate change". 
 
-Text surrounding environmental terms (half a paragraph context) are saved and transformed to a corpus object and tokenised for second-stage analysis. Tokens are then converted to a document-feature matrix (DFM) for analysis.
+Text surrounding environmental terms (half a paragraph context) are saved and transformed to a corpus object and 
+tokenized for second-stage analysis. Tokens are then converted to a document-feature matrix (DFM) for analysis.
 
 ```{r include=FALSE}
 corpus_environment <- corpus(tok.environment, split_context = FALSE)
@@ -166,9 +185,14 @@ environment_dfm <- dfm_group(environment_tok_dfm, groups = "docid")
 
 ## Time series of total counts plot
 
-In the following, I created a time series analysis of the total counts plot of words related to the environmental debate. As we can see the environmental debate indeed took off after the moon landing and became more and more important. The environmental debate was further triggered around 1987 when the Brundtland report was published and the concept of sustainable development became popular. 
+Here, I create a time series analysis of the total counts plot of words related to the environmental debate. 
+As we can see, the environmental debate indeed took off after the moon landing and became more and more important. 
+The environmental debate was further triggered around 1987 when the Brundtland report was published and the concept of 
+sustainable development became popular. 
 
-Between 2005 and 2010, there was another momentum when environmental issues became popular on the international stage. This might reflect continuing international debates as well as increasing environmental consciousness. Another factor could be of economic nature, namely, the appearance of renewable energy as a new industry. 
+Between 2005 and 2010, there was another momentum when environmental issues became popular on the international stage. 
+This might reflect continuing international debates as well as increasing environmental consciousness. 
+Another factor could be of economic nature, namely, the appearance of renewable energy as a new industry. 
 In general, the importance of environmental issues within UN General Debates is continuously increasing and reached another peak in 2016. 
 
 ```{r echo=FALSE}
